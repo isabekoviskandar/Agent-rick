@@ -43,7 +43,7 @@ class TelegramPoll extends Command
             try {
                 $updates = $telegram->getUpdates($offset);
 
-                if (! $updates || ! ($updates['ok'] ?? false)) {
+                if (!$updates || !($updates['ok'] ?? false)) {
                     $this->error('Failed to get updates. Retrying in 5 seconds...');
                     sleep(5);
 
@@ -71,13 +71,13 @@ class TelegramPoll extends Command
      */
     private function processUpdate(array $update, TelegramService $telegram): void
     {
-        $message = $update['message'] ?? null;
+        $message = $update['message'] ?? $update['channel_post'] ?? null;
 
-        if (! $message) {
+        if (!$message) {
             return;
         }
 
-        $from = $message['from']['first_name'] ?? 'Unknown';
+        $from = $message['from']['first_name'] ?? $message['chat']['title'] ?? 'Unknown';
         $text = $message['text'] ?? '[non-text message]';
         $chatId = $message['chat']['id'] ?? 'unknown';
 

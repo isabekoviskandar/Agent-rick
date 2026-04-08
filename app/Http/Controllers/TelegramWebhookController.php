@@ -19,7 +19,8 @@ class TelegramWebhookController
     {
         $update = $request->all();
 
-        $message = $update['message'] ?? null;
+        $isChannelPost = isset($update['channel_post']);
+        $message = $update['message'] ?? $update['channel_post'] ?? null;
 
         if (! $message || ! isset($message['text'])) {
             return response()->json(['ok' => true]);
@@ -32,14 +33,14 @@ class TelegramWebhookController
         if ($allowedIdsString) {
             $allowedIds = array_map('trim', explode(',', $allowedIdsString));
             if (! in_array((string) $chatId, $allowedIds, true)) {
-                Log::warning('Unauthorized Telegram group/user attempted to use the bot', ['chat_id' => $chatId]);
+                Log::warning('Unauthorized Telegram group/user/channel attempted to use the bot', ['chat_id' => $chatId]);
                 return response()->json(['ok' => true]);
             }
         }
         
         $text = $message['text'];
-        $username = $message['from']['username'] ?? null;
-        $firstName = $message['from']['first_name'] ?? 'Unknown';
+        $username = $message['from']['username'] ?? $message['chat']['username'] ?? null;
+        $firstName = $message['from']['first_name'] ?? $message['chat']['title'] ?? 'Unknown';
         $messageId = $message['message_id'];
         
         // Extract bot username if possible to check for mentions
@@ -63,7 +64,13 @@ class TelegramWebhookController
         
         if ($chatType === 'private') {
             $shouldReply = true;
+        } elseif ($chatType === 'channel') {
+            // Channel Strategy: ONLY reply if explicitly commanded
+            if (stripos($text, '/rick') !== false || stripos($text, '@' . $botUsername) !== false) {
+                $shouldReply = true;
+            }
         } else {
+            // Group/Discussion Strategy
             // 1. Check if mentioned or commanded
             if (stripos($text, '/rick') !== false || stripos($text, '@' . $botUsername) !== false || stripos($text, 'rick') !== false) {
                 $shouldReply = true;
@@ -79,6 +86,7 @@ class TelegramWebhookController
                 $originalPostId = $message['reply_to_message']['message_id'];
                 
                 // Use cache to track if we've already replied to this post
+                // We add it to cache, if it's true, it means it's the very first time!
                 if (Cache::add("replied_channel_post_{$chatId}_{$originalPostId}", true, now()->addDays(7))) {
                     $shouldReply = true;
                 }

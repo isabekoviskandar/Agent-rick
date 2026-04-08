@@ -87,7 +87,7 @@ class TelegramService
             ->connectTimeout(10)
             ->post("{$this->baseUrl}/setWebhook", [
                 'url' => $url,
-                'allowed_updates' => ['message'],
+                'allowed_updates' => ['message', 'channel_post'],
             ]);
 
         return $response->json();
@@ -123,7 +123,7 @@ class TelegramService
             ->post("{$this->baseUrl}/getUpdates", [
                 'offset' => $offset,
                 'timeout' => $timeout,
-                'allowed_updates' => ['message'],
+                'allowed_updates' => ['message', 'channel_post'],
             ]);
 
         return $response->json();
