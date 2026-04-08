@@ -37,7 +37,8 @@ return [
 
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
-        'allowed_user_id' => env('TELEGRAM_ALLOWED_USER_ID'),
+        'allowed_ids' => env('TELEGRAM_ALLOWED_IDS'),
+        'random_reply_chance' => env('RICK_RANDOM_REPLY_CHANCE', 10),
     ],
 
 ];

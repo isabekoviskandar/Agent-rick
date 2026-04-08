@@ -12,6 +12,12 @@ class TelegramWebhookControllerTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['services.telegram.allowed_ids' => null]);
+    }
+
     public function test_it_returns_early_for_missing_message(): void
     {
         $response = $this->postJson('/api/telegram/webhook', [

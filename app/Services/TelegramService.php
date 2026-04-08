@@ -25,12 +25,18 @@ class TelegramService
      *
      * @throws ConnectionException
      */
-    public function sendMessage(int|string $chatId, string $text, ?string $parseMode = 'HTML'): ?array
+    public function sendMessage(int|string $chatId, string $text, ?string $parseMode = 'HTML', ?int $replyToMessageId = null): ?array
     {
         $payload = [
             'chat_id' => $chatId,
             'text' => $text,
         ];
+
+        if ($replyToMessageId) {
+            $payload['reply_parameters'] = [
+                'message_id' => $replyToMessageId,
+            ];
+        }
 
         if ($parseMode) {
             $payload['parse_mode'] = $parseMode;
