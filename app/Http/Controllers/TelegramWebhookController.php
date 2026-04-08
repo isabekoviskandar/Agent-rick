@@ -20,18 +20,18 @@ class TelegramWebhookController
 
         $message = $update['message'] ?? null;
 
-        if (! $message || ! isset($message['text'])) {
+        if (!$message || !isset($message['text'])) {
             return response()->json(['ok' => true]);
         }
 
         $chatId = $message['chat']['id'];
-        
+
         $allowedUserId = config('services.telegram.allowed_user_id');
         if ($allowedUserId && (string) $chatId !== (string) $allowedUserId) {
             Log::warning('Unauthorized Telegram user attempted to use the bot', ['chat_id' => $chatId]);
             return response()->json(['ok' => true]);
         }
-        
+
         $text = $message['text'];
         $username = $message['from']['username'] ?? null;
         $firstName = $message['from']['first_name'] ?? 'Unknown';

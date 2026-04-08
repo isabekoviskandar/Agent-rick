@@ -9,8 +9,13 @@ use Laravel\Ai\Concerns\RemembersConversations;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
 use Laravel\Ai\Promptable;
+use Laravel\Ai\Attributes\Provider;
+use Laravel\Ai\Attributes\UseSmartestModel;
+use Laravel\Ai\Enums\Lab;
 use Stringable;
 
+#[Provider(Lab::OpenRouter)]
+#[Model('meta-llama/llama-3.3-70b-instruct:free')]
 #[MaxTokens(1024)]
 #[Temperature(0.9)]
 #[Timeout(120)]
