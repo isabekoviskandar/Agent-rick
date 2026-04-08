@@ -58,7 +58,9 @@ class TelegramWebhookControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        RickSanchez::assertPrompted('Hello Rick');
+        RickSanchez::assertPrompted(function ($prompt) {
+            return $prompt->contains('Hello Rick') && $prompt->contains('Idiot Score');
+        });
 
         $this->assertDatabaseHas('telegram_chats', [
             'telegram_chat_id' => 987654321,

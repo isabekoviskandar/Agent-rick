@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Ai\Agents\RickSanchez;
 use App\Models\TelegramChat;
+use App\Models\TelegramDossier;
 use App\Services\TelegramService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,55 +28,65 @@ class TelegramWebhookController
         }
 
         $chatId = $message['chat']['id'];
-        
+
         // Authorization Check
         $allowedIdsString = config('services.telegram.allowed_ids');
         if ($allowedIdsString) {
             $allowedIds = array_map('trim', explode(',', $allowedIdsString));
             if (! in_array((string) $chatId, $allowedIds, true)) {
                 Log::warning('Unauthorized Telegram group/user/channel attempted to use the bot', ['chat_id' => $chatId]);
+
                 return response()->json(['ok' => true]);
             }
         }
-        
+
         $text = $message['text'];
         $username = $message['from']['username'] ?? $message['chat']['username'] ?? null;
         $firstName = $message['from']['first_name'] ?? $message['chat']['title'] ?? 'Unknown';
         $messageId = $message['message_id'];
-        
+
         // Extract bot username if possible to check for mentions
         $botUsername = config('services.telegram.bot_username', 'AgentRickBot'); // Replace or pull dynamically
 
         // Handle /start command
         if ($text === '/start') {
             $this->handleStart($chatId, $firstName, $username, $telegram);
+
             return response()->json(['ok' => true]);
         }
 
         // Handle /reset command
         if ($text === '/reset') {
             $this->handleReset($chatId, $firstName, $telegram);
+
+            return response()->json(['ok' => true]);
+        }
+
+        // Handle /rickstats command
+        if (stripos($text, '/rickstats') === 0) {
+            $this->handleStats($chatId, $telegram);
+
             return response()->json(['ok' => true]);
         }
 
         // Group Chat Logic — Decide if we should reply
         $shouldReply = false;
         $chatType = $message['chat']['type'] ?? 'private';
-        
+
         if ($chatType === 'private') {
             $shouldReply = true;
         } elseif ($chatType === 'channel') {
             // Channel Strategy: ONLY reply if explicitly commanded
-            if (stripos($text, '/rick') !== false || stripos($text, '@' . $botUsername) !== false) {
+            if (stripos($text, '/rick') !== false || stripos($text, '@'.$botUsername) !== false) {
                 $shouldReply = true;
             }
         } else {
             // Group/Discussion Strategy
             // 1. Check if mentioned or commanded
-            if (stripos($text, '/rick') !== false || stripos($text, '@' . $botUsername) !== false || stripos($text, 'rick') !== false) {
+            if (stripos($text, '/rick') !== false || stripos($text, '@'.$botUsername) !== false || stripos($text, 'rick') !== false) {
                 $shouldReply = true;
             }
-            
+
             // 2. Check if a direct reply to the bot
             if (isset($message['reply_to_message']['from']['is_bot']) && $message['reply_to_message']['from']['is_bot']) {
                 $shouldReply = true;
@@ -84,14 +95,14 @@ class TelegramWebhookController
             // 3. Check if first comment on a channel post (replying to an automatically forwarded message from the channel)
             if (isset($message['reply_to_message']['is_automatic_forward']) && $message['reply_to_message']['is_automatic_forward']) {
                 $originalPostId = $message['reply_to_message']['message_id'];
-                
+
                 // Use cache to track if we've already replied to this post
                 // We add it to cache, if it's true, it means it's the very first time!
                 if (Cache::add("replied_channel_post_{$chatId}_{$originalPostId}", true, now()->addDays(7))) {
                     $shouldReply = true;
                 }
             }
-            
+
             // 4. Random Chance (10% by default)
             $chance = config('services.telegram.random_reply_chance', 10);
             if (! $shouldReply && rand(1, 100) <= $chance) {
@@ -190,10 +201,17 @@ class TelegramWebhookController
 
         $rick = new RickSanchez;
 
-        $promptText = $text;
+        // Fetch user dossier for memory profiling
+        $dossier = TelegramDossier::firstOrCreate(['telegram_chat_id' => $chatId]);
+        $factsString = empty($dossier->known_facts) ? 'None.' : implode('; ', $dossier->known_facts);
+
+        $contextPrefix = "[Context: You know the following facts about {$firstName}: {$factsString}. Their Idiot Score is {$dossier->idiot_score} (higher = dumber).]\n";
+
         if ($chatType !== 'private') {
-            $promptText = "[Context: You are in a group chat/comment section. This message is from {$firstName}.]\n" . $text;
+            $contextPrefix .= "[You are in a group/channel. This message is from {$firstName}.]\n";
         }
+
+        $promptText = $contextPrefix.$text;
 
         try {
             if ($chat->conversation_id) {
@@ -213,7 +231,7 @@ class TelegramWebhookController
             // In groups, reply directly to the message
             $replyToId = ($chatType === 'private') ? null : $messageId;
             $telegram->sendMessage($chatId, (string) $response, null, $replyToId);
-            
+
         } catch (\Throwable $e) {
             Log::error('Rick agent error', [
                 'chat_id' => $chatId,
@@ -224,10 +242,26 @@ class TelegramWebhookController
             $replyToId = ($chatType === 'private') ? null : $messageId;
             $telegram->sendMessage(
                 $chatId,
-                "Ugh, my brain temporarily glitched. Even geniuses have off *burp* moments. Hit me again.",
+                'Ugh, my brain temporarily glitched. Even geniuses have off *burp* moments. Hit me again.',
                 null,
                 $replyToId
             );
         }
+    }
+
+    /**
+     * Handle the /rickstats command.
+     */
+    private function handleStats(int|string $chatId, TelegramService $telegram): void
+    {
+        $dossier = TelegramDossier::firstOrCreate(['telegram_chat_id' => $chatId]);
+        $facts = empty($dossier->known_facts) ? "I don't know anything about you yet." : implode("\n- ", $dossier->known_facts);
+
+        $message = "📊 *IDIOT PROFILE* 📊\n\n";
+        $message .= "Your Idiot Score: *{$dossier->idiot_score}*\n\n";
+        $message .= "Things I know about you:\n- {$facts}\n\n";
+        $message .= '_Say something dumb and watch your score go up._';
+
+        $telegram->sendMessage($chatId, $message, 'Markdown');
     }
 }

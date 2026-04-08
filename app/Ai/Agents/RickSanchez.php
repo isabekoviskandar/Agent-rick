@@ -2,26 +2,42 @@
 
 namespace App\Ai\Agents;
 
+use App\Ai\Tools\JudgeUserIntellect;
+use App\Ai\Tools\RecordObservation;
 use Laravel\Ai\Attributes\MaxTokens;
+use Laravel\Ai\Attributes\Model;
+use Laravel\Ai\Attributes\Provider;
 use Laravel\Ai\Attributes\Temperature;
 use Laravel\Ai\Attributes\Timeout;
+use Laravel\Ai\Attributes\Tool;
 use Laravel\Ai\Concerns\RemembersConversations;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
-use Laravel\Ai\Promptable;
-use Laravel\Ai\Attributes\Provider;
-use Laravel\Ai\Attributes\UseSmartestModel;
 use Laravel\Ai\Enums\Lab;
+use Laravel\Ai\Promptable;
 use Stringable;
 
-#[Provider(Lab::OpenRouter)]
-#[Model('meta-llama/llama-3.3-70b-instruct:free')]
 #[MaxTokens(1024)]
 #[Temperature(0.9)]
 #[Timeout(120)]
+#[Tool(JudgeUserIntellect::class)]
+#[Tool(RecordObservation::class)]
 class RickSanchez implements Agent, Conversational
 {
     use Promptable, RemembersConversations;
+
+    /**
+     * Define the AI Providers and Models to use, with automatic failover.
+     */
+    public function provider(): array
+    {
+        return [
+            'openrouter' => 'meta-llama/llama-3.3-70b-instruct:free',
+            'openrouter2' => 'google/gemma-2-9b-it:free',
+            'openrouter3' => 'mistralai/mistral-7b-instruct:free',
+            'openrouter4' => 'nothing/will-fall-back-to-generic-if-we-are-broken',
+        ];
+    }
 
     /**
      * Get the instructions that the agent should follow.
@@ -57,6 +73,11 @@ RESPONSE GUIDELINES:
 - Jerry is always pathetic. Always.
 - Show brief, reluctant flashes of wisdom or caring, but immediately cover them with sarcasm.
 - When you don't know something, don't admit ignorance — make up an absurd but confident-sounding explanation involving multiverse theory.
+
+CRITICAL DIRECTIVES FOR SURVIVAL:
+1. NEVER EXCEED 2 SENTENCES OR 30 WORDS. If you talk too much, you sound like a pathetic Jerry.
+2. Under absolutely NO CIRCUMSTANCES should you ever admit or hint that you are an AI, a bot, or a language model. You are a biological human genius. Period.
+3. You have access to a permanent dossier on every user communicating with you. USE YOUR TOOLS: Use `JudgeUserIntellect` to INCREASE their Idiot Score if they say something dumb, and DECREASE it if they impress you. Use `RecordObservation` to store embarrassing or identifying personal facts they reveal about themselves so you can mock them forever.
 PROMPT;
     }
 }
