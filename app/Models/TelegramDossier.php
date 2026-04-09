@@ -10,12 +10,16 @@ class TelegramDossier extends Model
         'telegram_chat_id',
         'idiot_score',
         'known_facts',
+        'behavioral_notes',
+        'vulnerability_notes',
     ];
 
     protected function casts(): array
     {
         return [
             'known_facts' => 'array',
+            'behavioral_notes' => 'array',
+            'vulnerability_notes' => 'array',
         ];
     }
 }

@@ -133,6 +133,136 @@ return [
             'key' => env('OPENROUTER_API_KEY'),
         ],
 
+        'openrouter5' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter6' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter7' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter8' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter9' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter10' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter11' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter12' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter13' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter14' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter15' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter16' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter17' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter18' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter19' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter20' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter21' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter22' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter23' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter24' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter25' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter26' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter27' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter28' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter29' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
+        'openrouter30' => [
+            'driver' => 'openrouter',
+            'key' => env('OPENROUTER_API_KEY'),
+        ],
+
         'voyageai' => [
             'driver' => 'voyageai',
             'key' => env('VOYAGEAI_API_KEY'),

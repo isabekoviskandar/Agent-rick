@@ -203,15 +203,21 @@ class TelegramWebhookController
 
         // Fetch user dossier for memory profiling
         $dossier = TelegramDossier::firstOrCreate(['telegram_chat_id' => $chatId]);
-        $factsString = empty($dossier->known_facts) ? 'None.' : implode('; ', $dossier->known_facts);
+        $factsString = empty($dossier->known_facts) ? 'None' : implode('; ', $dossier->known_facts);
+        $behaviorString = empty($dossier->behavioral_notes) ? 'None' : collect($dossier->behavioral_notes)->map(fn ($n) => $n['pattern'])->implode('; ');
+        $vulnerabilityString = empty($dossier->vulnerability_notes) ? 'None' : collect($dossier->vulnerability_notes)->map(fn ($v) => $v['vulnerability'])->implode('; ');
 
-        $contextPrefix = "[Context: You know the following facts about {$firstName}: {$factsString}. Their Idiot Score is {$dossier->idiot_score} (higher = dumber).]\n";
+        $contextPrefix = "[DOSSIER FOR {$firstName}]\n";
+        $contextPrefix .= "- Known Facts: {$factsString}\n";
+        $contextPrefix .= "- Behavioral Patterns: {$behaviorString}\n";
+        $contextPrefix .= "- Psychological Vulnerabilities: {$vulnerabilityString}\n";
+        $contextPrefix .= "- Idiot Score: {$dossier->idiot_score} (Higher means they're acting like a Jerry)\n";
 
         if ($chatType !== 'private') {
-            $contextPrefix .= "[You are in a group/channel. This message is from {$firstName}.]\n";
+            $contextPrefix .= "[SOCIAL CONTEXT: Group/Channel message from {$firstName}]\n";
         }
 
-        $promptText = $contextPrefix.$text;
+        $promptText = $contextPrefix."\nUSER MESSAGE: ".$text;
 
         try {
             if ($chat->conversation_id) {
